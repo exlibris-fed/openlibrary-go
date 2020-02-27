@@ -18,14 +18,22 @@ const (
 
 var client *http.Client
 
+// A Response represents the response body from a request.
+type Response struct {
+	Start int   `json:"start"`
+	Found int   `json:"numFound"`
+	Docs  []Doc `json:"docs"`
+}
+
 // TitleSearch performs a title search and returns the results.
 func TitleSearch(title string) (docs []Doc, err error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?title%%3A%s", SearchURL, title), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?q=title%%3A%s", SearchURL, title), nil)
 	if err != nil {
 		return
 	}
 	req.Header.Add("Accept", "application/json")
-	resp, err := *getClient().Do(req)
+	c := *getClient()
+	resp, err := c.Do(req)
 	if err != nil {
 		return
 	}
@@ -35,7 +43,9 @@ func TitleSearch(title string) (docs []Doc, err error) {
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(body, &docs)
+	var r Response
+	err = json.Unmarshal(body, &r)
+	docs = r.Docs
 	return
 }
 
