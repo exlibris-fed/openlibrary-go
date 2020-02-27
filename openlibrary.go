@@ -14,6 +14,9 @@ const (
 
 	// SearchURL is the search url of the Open Library API
 	SearchURL = BaseURL + "/search"
+
+	// CoverURL is the hostname for the Open Library covers API
+	CoverURL = "http://covers.openlibrary.org"
 )
 
 var client *http.Client
