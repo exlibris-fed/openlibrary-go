@@ -25,7 +25,7 @@ func TitleSearch(title string) (docs []Doc, err error) {
 		return
 	}
 	req.Header.Add("Accept", "application/json")
-	resp, err := getClient().Do(req)
+	resp, err := *getClient().Do(req)
 	if err != nil {
 		return
 	}
@@ -39,7 +39,7 @@ func TitleSearch(title string) (docs []Doc, err error) {
 	return
 }
 
-func getClient() http.Client {
+func getClient() *http.Client {
 	if client != nil {
 		return client
 	}
