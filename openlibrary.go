@@ -106,7 +106,7 @@ func GetWorkByID(id string) (work Work, err error) {
 	if err != nil {
 		return
 	}
-	var r Work
+	var work Work
 	err = json.Unmarshal(body, &r)
 	return
 }
