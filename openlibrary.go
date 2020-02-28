@@ -15,6 +15,9 @@ const (
 	// SearchURL is the search url of the Open Library API
 	SearchURL = BaseURL + "/search"
 
+	// WorksURL is the url for works in the Open Library API
+	WorksURL = BaseURL + "/works"
+
 	// CoverURL is the hostname for the Open Library covers API
 	CoverURL = "http://covers.openlibrary.org"
 )
@@ -87,7 +90,7 @@ func TitleSearch(title string) (docs []Doc, err error) {
 
 // GetWorkByID returns a work given an a Work ID
 func GetWorkByID(id string) (work Work, err error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("works/%s.json", id), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s.json", WorksURL, id), nil)
 	if err != nil {
 		return
 	}
