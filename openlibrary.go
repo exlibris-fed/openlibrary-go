@@ -21,11 +21,44 @@ const (
 
 var client *http.Client
 
-// A Response represents the response body from a request.
-type Response struct {
+// A Search represents the response body from a request.
+type Search struct {
 	Start int   `json:"start"`
 	Found int   `json:"numFound"`
 	Docs  []Doc `json:"docs"`
+}
+
+// A Work respresents a work response body from a request
+type Work struct {
+	Description struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"description"`
+	Title   string `json:"title"`
+	Created struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"created"`
+	Covers       []int `json:"covers"`
+	LastModified struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"last_modified"`
+	LatestRevision int    `json:"latest_revision"`
+	Key            string `json:"key"`
+	Authors        []struct {
+		Type struct {
+			Key string `json:"key"`
+		} `json:"type"`
+		Author struct {
+			Key string `json:"key"`
+		} `json:"author"`
+	} `json:"authors"`
+	Type struct {
+		Key string `json:"key"`
+	} `json:"type"`
+	Subjects []string `json:"subjects"`
+	Revision int      `json:"revision"`
 }
 
 // TitleSearch performs a title search and returns the results.
@@ -46,11 +79,35 @@ func TitleSearch(title string) (docs []Doc, err error) {
 	if err != nil {
 		return
 	}
-	var r Response
+	var r Search
 	err = json.Unmarshal(body, &r)
 	docs = r.Docs
 	return
 }
+
+// GetWorkByID returns a work given an a Work ID
+func GetWorkByID(id string) (work Work, err error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("works/%s.json", id), nil)
+	if err != nil {
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	c := *getClient()
+	resp, err := c.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	var r Work
+	err = json.Unmarshal(body, &r)
+	return
+}
+
 
 func getClient() *http.Client {
 	if client != nil {
