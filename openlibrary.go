@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -66,7 +67,7 @@ type Work struct {
 
 // TitleSearch performs a title search and returns the results.
 func TitleSearch(title string) (docs []Doc, err error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?q=title%%3A%s", SearchURL, title), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?q=title%%3A%s", SearchURL, url.QueryEscape(title)), nil)
 	if err != nil {
 		return
 	}
@@ -109,7 +110,6 @@ func GetWorkByID(id string) (work Work, err error) {
 	err = json.Unmarshal(body, &work)
 	return
 }
-
 
 func getClient() *http.Client {
 	if client != nil {
