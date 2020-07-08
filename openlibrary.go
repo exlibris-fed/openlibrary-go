@@ -21,6 +21,9 @@ const (
 
 	// CoverURL is the hostname for the Open Library covers API
 	CoverURL = "http://covers.openlibrary.org"
+
+	// AuthorURL is the url for authors in the Open Library API
+	AuthorURL = BaseURL + "/authors"
 )
 
 var client *http.Client
@@ -43,26 +46,56 @@ type Work struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"created"`
-	Covers       []int `json:"covers"`
+	Photos       []int `json:"photos"`
 	LastModified struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"last_modified"`
 	LatestRevision int    `json:"latest_revision"`
 	Key            string `json:"key"`
-	Authors        []struct {
+	BirthDate      string `json:"birth_date"`
+	Revision       int    `json:"revision"`
+	Type           struct {
+		Key string `json:"key"`
+	} `json:"type"`
+	RemoteIds struct {
+		Viaf     string `json:"viaf"`
+		Wikidata string `json:"wikidata"`
+	} `json:"remote_ids"`
+}
+
+// An Author represents a work's author response body from a request
+type Author struct {
+	Bio   string `json:"bio"`
+	Name  string `json:"name"`
+	Links []struct {
+		URL  string `json:"url"`
 		Type struct {
 			Key string `json:"key"`
 		} `json:"type"`
-		Author struct {
-			Key string `json:"key"`
-		} `json:"author"`
-	} `json:"authors"`
-	Type struct {
+		Title string `json:"title"`
+	} `json:"links"`
+	PersonalName string `json:"personal_name"`
+	Created      struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"created"`
+	Photos       []int `json:"photos"`
+	LastModified struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"last_modified"`
+	LatestRevision int    `json:"latest_revision"`
+	Key            string `json:"key"`
+	BirthDate      string `json:"birth_date"`
+	Revision       int    `json:"revision"`
+	Type           struct {
 		Key string `json:"key"`
 	} `json:"type"`
-	Subjects []string `json:"subjects"`
-	Revision int      `json:"revision"`
+	RemoteIds struct {
+		Viaf     string `json:"viaf"`
+		Wikidata string `json:"wikidata"`
+	} `json:"remote_ids"`
 }
 
 // TitleSearch performs a title search and returns the results.
@@ -108,6 +141,28 @@ func GetWorkByID(id string) (work Work, err error) {
 		return
 	}
 	err = json.Unmarshal(body, &work)
+	return
+}
+
+// GetAuthorByID returns an author given an Author ID
+func GetAuthorByID(id string) (author Author, err error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s.json", AuthorURL, id), nil)
+	if err != nil {
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	c := *getClient()
+	resp, err := c.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &author)
 	return
 }
 
