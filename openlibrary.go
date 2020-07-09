@@ -41,9 +41,9 @@ type Search struct {
 
 // A Work respresents a work response body from a request
 type Work struct {
-	Description string `json:"description"`
-	Title       string `json:"title"`
-	Created     struct {
+	//Description string `json:"description"`
+	Title   string `json:"title"`
+	Created struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"created"`
