@@ -68,6 +68,9 @@ func (d *Doc) CoverURL(size Size) string {
 	case d.Key != "":
 		key = "id"
 		value = strconv.Itoa(d.CoverID)
+		if value == 0 {
+			return ""
+		}
 	case len(d.ISBN) > 0:
 		key = "isbn"
 		value = d.ISBN[0]
