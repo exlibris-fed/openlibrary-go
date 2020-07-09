@@ -41,9 +41,9 @@ type Search struct {
 
 // A Work respresents a work response body from a request
 type Work struct {
-	//Description string `json:"description"`
-	Title   string `json:"title"`
-	Created struct {
+	Description WorkDescription `json:"description"`
+	Title       string          `json:"title"`
+	Created     struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"created"`
@@ -61,15 +61,43 @@ type Work struct {
 	Authors        []WorkAuthor `json:"authors"`
 }
 
+// WorkDescription extracts a work's description field
+type WorkDescription string
+
+// UnmarshalJSON will try to unmarshal a complex object, falling back to string before failing
+func (d *WorkDescription) UnmarshalJSON(data []byte) error {
+	var obj struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}
+	err := json.Unmarshal(data, &obj)
+	if err != nil {
+		var value string
+		err = json.Unmarshal(data, &value)
+		if err != nil {
+			return err
+		}
+		description := WorkDescription(value)
+		d = &description
+
+	}
+	description := WorkDescription(obj.Value)
+	d = &description
+	return nil
+}
+
+// WorkType is the work type
 type WorkType struct {
 	Key string `json:"key"`
 }
 
+// WorkRemoteID is some remote ID
 type WorkRemoteID struct {
 	Viaf     string `json:"viaf"`
 	Wikidata string `json:"wikidata"`
 }
 
+// WorkAuthor describes the author of a work
 type WorkAuthor struct {
 	Type struct {
 		Key string `json:"key"`
