@@ -24,6 +24,10 @@ const (
 
 	// AuthorURL is the url for authors in the Open Library API
 	AuthorURL = BaseURL + "/authors"
+
+	// EditionsURL is the url for editions of a work in the Open Library API
+	// must provide work ID
+	EditionsURL = BaseURL + "/works/%s/editions.json"
 )
 
 var client *http.Client
@@ -51,17 +55,31 @@ type Work struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"last_modified"`
-	LatestRevision int    `json:"latest_revision"`
-	Key            string `json:"key"`
-	BirthDate      string `json:"birth_date"`
-	Revision       int    `json:"revision"`
-	Type           struct {
+	LatestRevision int          `json:"latest_revision"`
+	Key            string       `json:"key"`
+	BirthDate      string       `json:"birth_date"`
+	Revision       int          `json:"revision"`
+	Type           WorkType     `json:"type"`
+	RemoteIds      WorkRemoteID `json:"remote_ids"`
+	Authors        []WorkAuthor `json:"authors"`
+}
+
+type WorkType struct {
+	Key string `json:"key"`
+}
+
+type WorkRemoteID struct {
+	Viaf     string `json:"viaf"`
+	Wikidata string `json:"wikidata"`
+}
+
+type WorkAuthor struct {
+	Type struct {
 		Key string `json:"key"`
 	} `json:"type"`
-	RemoteIds struct {
-		Viaf     string `json:"viaf"`
-		Wikidata string `json:"wikidata"`
-	} `json:"remote_ids"`
+	Author struct {
+		Key string `json:"key"`
+	} `json:"author"`
 }
 
 // An Author represents a work's author response body from a request
@@ -96,6 +114,53 @@ type Author struct {
 		Viaf     string `json:"viaf"`
 		Wikidata string `json:"wikidata"`
 	} `json:"remote_ids"`
+}
+
+// EditionsResponse represents the response for editions of a work
+type EditionsResponse struct {
+	Entries []Edition `json:"entries"`
+	Links   struct {
+		Self string `json:"self"`
+		Work string `json:"work"`
+	} `json:"links"`
+	Size int `json:"size"`
+}
+
+// Edition represents the edition of a work
+type Edition struct {
+	Publishers     []string `json:"publishers"`
+	NumberOfPages  int      `json:"number_of_pages"`
+	Subtitle       string   `json:"subtitle"`
+	Covers         []int    `json:"covers"`
+	LocalID        []string `json:"local_id"`
+	PhysicalFormat string   `json:"physical_format"`
+	LastModified   struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"last_modified"`
+	LatestRevision  int    `json:"latest_revision"`
+	Key             string `json:"key"`
+	Classifications struct {
+	} `json:"classifications"`
+	SourceRecords []string `json:"source_records"`
+	Title         string   `json:"title"`
+	Identifiers   struct {
+		Goodreads []string `json:"goodreads"`
+	} `json:"identifiers"`
+	Created struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"created"`
+	Isbn13      []string `json:"isbn_13"`
+	Isbn10      []string `json:"isbn_10"`
+	PublishDate string   `json:"publish_date"`
+	Works       []struct {
+		Key string `json:"key"`
+	} `json:"works"`
+	Type struct {
+		Key string `json:"key"`
+	} `json:"type"`
+	Revision int `json:"revision"`
 }
 
 // TitleSearch performs a title search and returns the results.
@@ -163,6 +228,31 @@ func GetAuthorByID(id string) (author Author, err error) {
 		return
 	}
 	err = json.Unmarshal(body, &author)
+	return
+}
+
+// GetEditionsByID returns the editions for a work
+func GetEditionsByID(id string) (editions []Edition, err error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(EditionsURL, id), nil)
+	if err != nil {
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	c := *getClient()
+	resp, err := c.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	var editionsResponse EditionsResponse
+	err = json.Unmarshal(body, &editionsResponse)
+
+	editions = editionsResponse.Entries
 	return
 }
 
