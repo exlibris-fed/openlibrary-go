@@ -66,6 +66,7 @@ type WorkDescription string
 
 // UnmarshalJSON will try to unmarshal a complex object, falling back to string before failing
 func (d *WorkDescription) UnmarshalJSON(data []byte) error {
+	var description WorkDescription
 	var obj struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
@@ -77,12 +78,11 @@ func (d *WorkDescription) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
-		description := WorkDescription(value)
-		d = &description
-
+		description = WorkDescription(value)
+	} else {
+		description = WorkDescription(obj.Value)
 	}
-	description := WorkDescription(obj.Value)
-	d = &description
+	*d = description
 	return nil
 }
 
