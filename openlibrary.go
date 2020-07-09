@@ -109,8 +109,8 @@ type WorkAuthor struct {
 
 // An Author represents a work's author response body from a request
 type Author struct {
-	Bio   string `json:"bio"`
-	Name  string `json:"name"`
+	Bio   AuthorBio `json:"bio"`
+	Name  string    `json:"name"`
 	Links []struct {
 		URL  string `json:"url"`
 		Type struct {
@@ -139,6 +139,31 @@ type Author struct {
 		Viaf     string `json:"viaf"`
 		Wikidata string `json:"wikidata"`
 	} `json:"remote_ids"`
+}
+
+// AuthorBio extracts an author's bio
+type AuthorBio string
+
+// UnmarshalJSON will try to unmarshal a complex object, falling back to string before failing
+func (a *AuthorBio) UnmarshalJSON(data []byte) error {
+	var bio AuthorBio
+	var obj struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}
+	err := json.Unmarshal(data, &obj)
+	if err != nil {
+		var value string
+		err = json.Unmarshal(data, &value)
+		if err != nil {
+			return err
+		}
+		bio = AuthorBio(value)
+	} else {
+		bio = AuthorBio(obj.Value)
+	}
+	*a = bio
+	return nil
 }
 
 // EditionsResponse represents the response for editions of a work
