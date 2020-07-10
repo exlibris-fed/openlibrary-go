@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -59,6 +60,21 @@ type Work struct {
 	Type           WorkType     `json:"type"`
 	RemoteIds      WorkRemoteID `json:"remote_ids"`
 	Authors        []WorkAuthor `json:"authors"`
+	Covers         []int        `json:"covers"`
+}
+
+// CoverURL returns the URL of an image of the specified size for the document.
+func (w *Work) CoverURL(size Size) string {
+	if !(len(w.Covers) > 0) {
+		return ""
+	}
+	var key, value string
+	key = "id"
+	value = strconv.Itoa(w.Covers[0])
+	if value == "0" {
+		return ""
+	}
+	return fmt.Sprintf("%s/b/%s/%s-%s.jpg", CoverURL, key, value, size)
 }
 
 // WorkDescription extracts a work's description field
